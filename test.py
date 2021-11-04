@@ -1,17 +1,15 @@
 import random
 
-horses = {}
-for horse in range(25):
-    horses[horse] = random.random()
 
-groups = {}
-for i in range(5):
-    group = {}
-    for j in range(5):
-        group[j+i*5] = horses[j+i*5]
-    groups[i] = group
+X = "X"
+O = "O"
+EMPTY = None
 
+list = [[1, X], [9, EMPTY]]
+a = ""
 
-    
+for i, row in list:
+    a += row
 
-print(groups)
+print(a)
+

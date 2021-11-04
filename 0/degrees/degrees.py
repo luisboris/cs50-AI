@@ -93,45 +93,49 @@ def shortest_path(source, target):
     """
 
     source_node = Node(source, None, None)
-    target_node = Node(target, None, None)
+    target_node = Node(None, None, None)
 
     # People already in Node
-    explored = [target]
+    explored = []
+    pairs = []
    
     # Create Frontier and add source Node
     paths = QueueFrontier()
     paths.add(source_node)
     while True:
-        
+
+        # If target found, backwards track path to source
+        if target_node.state is not None:
+            current_person = target_node
+            while current_person.parent is not None:
+                pairs.append((current_person.action, current_person.state))
+                current_person = current_person.parent
+            pairs.reverse()
+            return pairs
+
         if paths.empty():
-            break
+            return None
         
         current_node = paths.remove()
+
+        print("CURRENT_________________________________________________", people[current_node.state]["name"])
 
         neighbors = neighbors_for_person(current_node.state)
         for neighbor in neighbors:
             # Check for target
             if neighbor[1] == target:
+                target_node.state = target
                 target_node.parent = current_node
                 target_node.action = neighbor[0]
+                print("FOUND! - ", movies[neighbor[0]]["title"])
                 break
             # Create Node and add it to Frontier
-            if neighbor[1] not in explored:
+            if neighbor not in explored and neighbor[1] != source and neighbor[1] != current_node.state:
                 paths.add(Node(neighbor[1], current_node, neighbor[0]))
-                explored.append(neighbor[1])
-                print(len(explored))
-            
-    # Backwards track path from source to target
-    pairs = []
-    if target_node:
-        current_person = target_node
-        while current_person.parent is not None:
-            pairs.append((current_person.action, current_person.state))
-            current_person = current_person.parent
+                explored.append(neighbor)
+                print(people[neighbor[1]]["name"], movies[neighbor[0]]["title"])
 
     print("total STEPS: ", len(explored))
-    
-    return pairs
 
 
 def person_id_for_name(name):
