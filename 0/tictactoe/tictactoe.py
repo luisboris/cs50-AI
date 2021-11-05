@@ -126,14 +126,27 @@ def minimax(board):
     if terminal(board) is True:
         return None
 
-    current_player = player(board)
+    moves = actions(board)
+    if len(moves) == 1:
+        return moves[0]
 
-    for action in actions(board):
-        current_board = result(board, action)
-        if utility(current_board) == 1 and current_player == X or utility(current_board) == -1 and current_player == O:
-            print("optimal - ", action)
-            return action
-        elif utility(current_board) == 1 and current_player == O or utility(current_board) == -1 and current_player == X:
-            return None
-        else:
-            return minimax(current_board)
+        
+    scores = {}
+
+    def get_scores(scores, board):
+        for action in actions(board):
+
+            current_player = player(board)
+            current_board = result(board, action)
+
+            # update score            
+            if len(moves) == 1:
+                return utility(current_board)
+            else:
+                scores[action] += get_scores(scores, current_board)
+
+            return scores
+
+            # choose best score option
+
+    get_scores(moves, scores, board)
