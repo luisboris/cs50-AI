@@ -40,8 +40,8 @@ def actions(board):
     """
     actions = set()
 
-    for i in range(len(board)):
-        for j in range(len(board)):
+    for i in range(3):
+        for j in range(3):
             if board[i][j] == EMPTY:
                 actions.add((i, j))
 
@@ -52,26 +52,26 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    print(board, action)
+    #print(action, board)
     if action not in actions(board):
         raise Exception("Move not valid")
     
-    new_board = copy.deepcopy(board)
-    new_board[action[0]][action[1]] = player(board)
-    return new_board
+    board = copy.deepcopy(board)
+    board[action[0]][action[1]] = player(board)
+    
+    return board
 
 
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-   
-    if [X, X, X] in board:
-        return X
-    if [O, O, O] in board:
-        return O
-
-    for i in range(len(board)):
+    for i in range(3):
+        if board[0][i] == board[1][i] == board[2][i]:
+            if board[0][i] == X:
+                return X
+            if board[0][i] == O:
+                return O    
         if board[i][0] == board[i][1] == board[i][2]:
             if board[i][0] == X:
                 return X
@@ -110,7 +110,6 @@ def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    
     if winner(board) == X:
         return 1
     elif winner(board) == O:
@@ -126,27 +125,43 @@ def minimax(board):
     if terminal(board) is True:
         return None
 
-    moves = actions(board)
-    if len(moves) == 1:
-        return moves[0]
+    if player(board) is X:
+        return max_score(board, float("inf"))[1]
+    else:
+        return min_score(board, float("-inf"))[1]
 
-        
-    scores = {}
 
-    def get_scores(scores, board):
-        for action in actions(board):
+def max_score(board, min):
 
-            current_player = player(board)
-            current_board = result(board, action)
+    if terminal(board) is True:
+        return [utility(board), None]
 
-            # update score            
-            if len(moves) == 1:
-                return utility(current_board)
-            else:
-                scores[action] += get_scores(scores, current_board)
+    max = float("-inf")
+    move = None
+    for action in actions(board):
+        value = min_score(result(board, action), max)[0]
+        if value > max:
+            max = value
+            move = action
+        if value > min:
+           break
+    
+    return [max, move]
 
-            return scores
 
-            # choose best score option
+def min_score(board, max):
 
-    get_scores(moves, scores, board)
+    if terminal(board) is True:
+        return [utility(board), None]
+
+    min = float("inf")
+    move = None
+    for action in actions(board):
+        value = max_score(result(board, action), min)[0]
+        if value < min:
+            min = value
+            move = action
+        if value < max:
+           break
+    
+    return [min, move]
