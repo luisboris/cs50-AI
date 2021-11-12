@@ -127,18 +127,19 @@ def iterate_pagerank(corpus, damping_factor):
                 if page in corpus[link]:
                     links[link] = link
             
+            # get PageRank
             sum = 0
             for link in links:
                 sum += previous_ranks[link] / len(links[link])
-
-            # get PageRank
             ranks[page] = ((1 - damping_factor) / len(corpus)) + (damping_factor * sum)
+            
             print(((1 - damping_factor) / len(corpus)), (damping_factor * sum))
 
             # check for convergence
             if abs(ranks[page] - previous_ranks[page]) < 0.001:
                 convergence += 1
-        print(ranks, previous_ranks)
+        
+        print(ranks, "\n", previous_ranks)
         
         if convergence == len(corpus):
             break
