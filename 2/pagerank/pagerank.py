@@ -115,7 +115,7 @@ def iterate_pagerank(corpus, damping_factor):
     
     # iterate until convergence in all PageRanks
     while True:
-
+        
         previous_ranks = copy.deepcopy(ranks)
         convergence = 0
         for page in corpus:
@@ -124,22 +124,18 @@ def iterate_pagerank(corpus, damping_factor):
             # (if page has no links, behave as if having one link for every page - including itself)
             links = {}
             for link in corpus:
-                if page in corpus[link]:
+                if len(corpus[link]) == 0 or page in corpus[link]:
                     links[link] = link
             
             # get PageRank
             sum = 0
-            for link in links:
-                sum += previous_ranks[link] / len(links[link])
+            for i in links:
+                sum += ranks[i] / len(corpus[i])
             ranks[page] = ((1 - damping_factor) / len(corpus)) + (damping_factor * sum)
             
-            print(((1 - damping_factor) / len(corpus)), (damping_factor * sum))
-
             # check for convergence
             if abs(ranks[page] - previous_ranks[page]) < 0.001:
                 convergence += 1
-        
-        print(ranks, "\n", previous_ranks)
         
         if convergence == len(corpus):
             break
