@@ -126,7 +126,7 @@ def iterate_pagerank(corpus, damping_factor):
             for link in corpus:
                 if len(corpus[link]) == 0 or page in corpus[link]:
                     links[link] = link
-            
+
             # get PageRank
             sum = 0
             for i in links:
