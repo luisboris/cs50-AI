@@ -1,7 +1,9 @@
 import os
 import random
+import numpy
 import re
 import sys
+import copy
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -52,24 +54,49 @@ def transition_model(corpus, page, damping_factor):
     """
     Return a probability distribution over which page to visit next,
     given a current page.
-
-    With probability `damping_factor`, choose a link at random
-    linked to by `page`. With probability `1 - damping_factor`, choose
-    a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    model = {}
+
+    # page has no links
+    if len(corpus[page]) == 0:
+        for link in corpus:
+            model[link] = 1 / len(corpus)
+    else:
+        # probability for random link from corpus
+        for link in corpus:
+            model[link] = (1 - damping_factor) / len(corpus)
+            
+        # probability for random link from page
+        for link in corpus[page]:          
+            model[link] += damping_factor / (len(corpus[page]))
+
+    return model
 
 
 def sample_pagerank(corpus, damping_factor, n):
     """
     Return PageRank values for each page by sampling `n` pages
     according to transition model, starting with a page at random.
-
-    Return a dictionary where keys are page names, and values are
-    their estimated PageRank value (a value between 0 and 1). All
-    PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    link = random.choice(list(corpus))
+
+    # number of times each page was visited
+    clicks = {}
+    for page in corpus:
+        clicks[page] = 0
+
+    # generate samples by clicking links at random following distribution code
+    for i in range(n):
+        distribution = transition_model(corpus, link, damping_factor)
+        link = numpy.random.choice(list(corpus), p=list(distribution.values()))
+        clicks[link] += 1
+    
+    # calculate PageRank of each page
+    ranks = {}
+    for page in corpus:
+        ranks[page] = clicks[page] / n
+
+    return ranks
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,7 +108,43 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    # define initial rank, equal for every page
+    ranks = {}
+    for page in corpus:
+        ranks[page] = 1 / len(corpus)
+    
+    # iterate until convergence in all PageRanks
+    while True:
+
+        previous_ranks = copy.deepcopy(ranks)
+        convergence = 0
+        for page in corpus:
+
+            # get group of pages that link to current page 
+            # (if page has no links, behave as if having one link for every page - including itself)
+            links = {}
+            for link in corpus:
+                if page in corpus[link]:
+                    links[link] = link
+            
+            sum = 0
+            for link in links:
+                sum += previous_ranks[link] / len(links[link])
+
+            # get PageRank
+            ranks[page] = ((1 - damping_factor) / len(corpus)) + (damping_factor * sum)
+            print(((1 - damping_factor) / len(corpus)), (damping_factor * sum))
+
+            # check for convergence
+            if abs(ranks[page] - previous_ranks[page]) < 0.001:
+                convergence += 1
+        print(ranks, previous_ranks)
+        
+        if convergence == len(corpus):
+            break
+    
+    return ranks
+
 
 
 if __name__ == "__main__":
