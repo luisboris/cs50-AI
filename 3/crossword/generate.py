@@ -120,11 +120,16 @@ class CrosswordCreator():
         if self.crossword.overlaps[x, y] is not None:
             x_index, y_index = self.crossword.overlaps[x, y]
             for word1 in self.domains[x].copy():
+                # search for a match in overlap, discard words without match
+                match = False
                 for word2 in self.domains[y].copy():
-                    if word1[x_index] != word2[y_index]:
-                        self.domains[x].discard(word1)
-                        revision = True
+                    if word1[x_index] == word2[y_index]:
+                        match = True
                         break
+                if not match:
+                    self.domains[x].discard(word1)
+                    revision = True
+                    
         return revision
 
 
@@ -143,7 +148,7 @@ class CrosswordCreator():
                 (v1, v2) for (v1, v2), overlap in self.crossword.overlaps.items() 
                 if overlap is not None
             ]
-
+        
         # while there are still arcs to revise
         while len(arcs) != 0:
             # dequeue arc and revise
@@ -202,10 +207,22 @@ class CrosswordCreator():
         that rules out the fewest values among the neighbors of `var`.
         """
         values = []
-        for word in self.domains[var]:
-            values.append(word)
-                    
-        return values.sort()
+        for word1 in self.domains[var]:
+            # number of values discarded 
+            count = 0
+            # check for unnassigned variables among neighbors
+            for v in self.domains:
+                if v not in assignment and v in self.crossword.neighbors(var):
+                    # count discards
+                    var_index, v_index = self.crossword.overlaps[var, v]
+                    for word2 in self.domains[v]:
+                        if word1[var_index] != word2[v_index]:
+                            count += 1
+            values.append((word1, count))
+
+        values.sort(key=lambda a: a[1])
+
+        return [word for (word, count) in values]
 
 
     def select_unassigned_variable(self, assignment):
@@ -223,8 +240,6 @@ class CrosswordCreator():
                 current[0] = v
                 current[1] = len(self.domains[v])
 
-        print(current)
-        
         return current[0]
 
 
@@ -237,17 +252,15 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        print(assignment)
         # assignment complete
         if self.assignment_complete(assignment):
-            print("complete")
             return assignment
 
         # get unnassigned variable
         v = self.select_unassigned_variable(assignment)
 
         # get consistent value
-        for word in self.domains[v]:
+        for word in self.order_domain_values(v, assignment):
             assignment[v] = word
             # consistent
             if self.consistent(assignment):
