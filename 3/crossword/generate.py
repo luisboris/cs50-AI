@@ -233,14 +233,24 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        # register chosen variable and corresponding number
-        current = [None, float('inf')]
+        # register chosen variable and corresponding number of values
+        values = []
         for v in self.domains:
-            if v not in assignment and len(self.domains[v]) < current[1]:
-                current[0] = v
-                current[1] = len(self.domains[v])
+            if v not in assignment:
+                values.append((v, len(self.domains[v])))
+        values.sort(key=lambda a: a[1])
 
-        return current[0]
+        # check for ties
+        unnassigned = values[0][0]
+        for (v, count) in values:
+            if v == unnassigned:
+                continue
+            if values[0][1] == count:
+                # find variable with most neighbors
+                if self.crossword.neighbors(v) > self.crossword.neighbors(unnassigned):
+                    unnassigned = v
+
+        return unnassigned
 
 
     def backtrack(self, assignment):
