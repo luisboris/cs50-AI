@@ -89,7 +89,8 @@ def get_model():
 
     model
     print(model)
-
+    fero
+    
     # convolution
 
     # pooling
