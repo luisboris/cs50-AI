@@ -85,18 +85,20 @@ def get_model():
     """
 
     model = keras.models.Sequential([
+        # convolution
+
+        # pooling
+
+        # dropout
+
         layers.Flatten(),
+        
         # hidden layers
         layers.Dense(50, activation=tf.nn.relu),
+
         # output layer
         layers.Dense(NUM_CATEGORIES, activation=tf.nn.softmax)
     ])
-
-    # convolution
-
-    # pooling
-
-    # dropout
 
     # training
     model.compile(
