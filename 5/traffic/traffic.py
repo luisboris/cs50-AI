@@ -7,11 +7,12 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 from sklearn.model_selection import train_test_split
+from tensorflow.python.framework.ops import NullContextmanager
 
 EPOCHS = 10
 IMG_WIDTH = 30
 IMG_HEIGHT = 30
-NUM_CATEGORIES = 3
+NUM_CATEGORIES = 43
 TEST_SIZE = 0.4
 
 
@@ -60,7 +61,8 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    images, labels = ([], [])
+    images = list()
+    labels = list()
 
     for dir in os.listdir(data_dir):
         print(dir)
@@ -78,7 +80,7 @@ def load_data(data_dir):
             #cv2.imshow("display window", img)
             #cv2.waitKey(0)
     
-    return(images, labels)
+    return images, labels
     
 def get_model():
     """
@@ -86,31 +88,30 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    model = keras.models.Sequential([
-        #input layer
-        layers.Flatten(),
 
+    model = keras.models.Sequential([
         # convolution
 
         # pooling
 
         # dropout
 
+        layers.Flatten(),
+        
         # hidden layers
-        layers.Dense(5, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3), activation='relu'),
+        layers.Dense(50, activation=tf.nn.relu),
+
         # output layer
-        layers.Dense(NUM_CATEGORIES, activation='softmax')
+        layers.Dense(NUM_CATEGORIES, activation=tf.nn.softmax)
     ])
 
     # training
     model.compile(
-        optimizer='adam',
-        loss="sparse_categorical_crossentropy",
-        metrics=['accuracy']
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
     )
 
-    print(model.summary())
-    
     return model
 
 
