@@ -62,11 +62,6 @@ def load_data(data_dir):
     """
     images, labels = ([], [])
 
-    for dir in os.listdir(data_dir):
-        print(dir)
-        for file in os.listdir(os.path.join(data_dir, dir)):
-            pass
-
     # repeat for every folder (#folder = #label)
     for i in range(NUM_CATEGORIES):
         # read image, resize it and store it
@@ -90,17 +85,17 @@ def get_model():
         #input layer
         layers.Flatten(),
 
-        # convolution
-
-        # pooling
-
-        # dropout
-
         # hidden layers
         layers.Dense(5, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3), activation='relu'),
         # output layer
         layers.Dense(NUM_CATEGORIES, activation='softmax')
     ])
+    
+    # convolution
+
+    # pooling
+
+    # dropout
 
     # training
     model.compile(
