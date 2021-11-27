@@ -2,18 +2,16 @@ import cv2
 import numpy as np
 import os
 import sys
-import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
 from sklearn.model_selection import train_test_split
-from tensorflow.python.framework.ops import NullContextmanager
 
 EPOCHS = 10
 IMG_WIDTH = 30
 IMG_HEIGHT = 30
-NUM_CATEGORIES = 43
+NUM_CATEGORIES = 3
 TEST_SIZE = 0.4
 
 
@@ -62,43 +60,20 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    images = list()
-    labels = list()
-
-    for dir in os.listdir(data_dir):
-        print(dir)
-        for file in os.listdir(os.path.join(data_dir, dir)):
-            pass
+    images, labels = ([], [])
 
     # repeat for every folder (#folder = #label)
-    for dir in os.listdir(data_dir):
-        folder = os.path.join(data_dir, dir)
+    for i in range(NUM_CATEGORIES):
         # read image, resize it and store it
-        for file in os.listdir(folder):
-            try:
-                img = cv2.imread(os.path.join(folder, file))
-                img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
-                images.append(img)
-                labels.append(int(dir))
-                #cv2.imshow("display window", img)
-                #cv2.waitKey(0)
-
-            except Exception as e:
-                print(f'problem with file {file}')
-                print(e)
-    """"
-    plt.figure(figsize=(10,10))
-    for i in range(25):
-        plt.subplot(5,5,i+1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.grid(False)
-        plt.imshow(images[i*10])
-        plt.xlabel(labels[i*10])
-    plt.show()
-    """
-
-    return images, labels
+        for file in os.listdir(os.path.join(data_dir, str(i))):
+            img = cv2.imread(os.path.join(data_dir, str(i), file))
+            img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+            images.append(img)
+            labels.append(i)
+            #cv2.imshow("display window", img)
+            #cv2.waitKey(0)
+    
+    return(images, labels)
     
 def get_model():
     """
@@ -106,28 +81,31 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-
     model = keras.models.Sequential([
-        # convolution layers and poolings
-        layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
-        layers.MaxPooling2D((2, 2)),
-
+        #input layer
         layers.Flatten(),
-        
-        # hidden layers and dropout
-        layers.Dense(150, activation=tf.nn.relu),
 
+        # hidden layers
+        layers.Dense(5, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3), activation='relu'),
         # output layer
-        layers.Dense(NUM_CATEGORIES, activation=tf.nn.softmax)
+        layers.Dense(NUM_CATEGORIES, activation='softmax')
     ])
+    
+    # convolution
+
+    # pooling
+
+    # dropout
 
     # training
     model.compile(
-        optimizer="adam",
-        loss="categorical_crossentropy",
-        metrics=["accuracy"]
+        optimizer='adam',
+        loss="sparse_categorical_crossentropy",
+        metrics=['accuracy']
     )
 
+    print(model.summary())
+    
     return model
 
 
