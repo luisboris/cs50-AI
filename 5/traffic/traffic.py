@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 import sys
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -65,16 +66,33 @@ def load_data(data_dir):
     labels = list()
 
     # repeat for every folder (#folder = #label)
-    for i in range(NUM_CATEGORIES):
+    for dir in os.listdir(data_dir):
+        folder = os.path.join(data_dir, dir)
         # read image, resize it and store it
-        for file in os.listdir(os.path.join(data_dir, str(i))):
-            img = cv2.imread(os.path.join(data_dir, str(i), file))
-            img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
-            images.append(img)
-            labels.append(i)
-            #cv2.imshow("display window", img)
-            #cv2.waitKey(0)
-    
+        for file in os.listdir(folder):
+            try:
+                img = cv2.imread(os.path.join(folder, file))
+                img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+                images.append(img)
+                labels.append(int(dir))
+                #cv2.imshow("display window", img)
+                #cv2.waitKey(0)
+
+            except Exception as e:
+                print(f'problem with file {file}')
+                print(e)
+    """"
+    plt.figure(figsize=(10,10))
+    for i in range(25):
+        plt.subplot(5,5,i+1)
+        plt.xticks([])
+        plt.yticks([])
+        plt.grid(False)
+        plt.imshow(images[i*10])
+        plt.xlabel(labels[i*10])
+    plt.show()
+    """
+
     return images, labels
     
 def get_model():
@@ -85,16 +103,14 @@ def get_model():
     """
 
     model = keras.models.Sequential([
-        # convolution
-
-        # pooling
-
-        # dropout
+        # convolution layers and poolings
+        layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+        layers.MaxPooling2D((2, 2)),
 
         layers.Flatten(),
         
-        # hidden layers
-        layers.Dense(50, activation=tf.nn.relu),
+        # hidden layers and dropout
+        layers.Dense(150, activation=tf.nn.relu),
 
         # output layer
         layers.Dense(NUM_CATEGORIES, activation=tf.nn.softmax)
